@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="contentPane" maxHeight="750.0" maxWidth="1100.0" minHeight="515.0" minWidth="953.0" prefHeight="789.0" prefWidth="1298.0" style="-fx-background-color: #212230;" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.etis.MainWindowController">
+   <BorderPane layoutX="2.0" layoutY="-5.0" prefHeight="756.0" prefWidth="1100.0">
+      <left>
+         <VBox alignment="TOP_CENTER" prefHeight="596.0" prefWidth="219.0" BorderPane.alignment="CENTER">
+
+            <Pane prefHeight="51.0" prefWidth="219.0" />
+            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Duomenų lentelės" wrappingWidth="216.13671875">
+               <font>
+                  <Font name="Eras Demi ITC" size="20.0" />
+               </font>
+            </Text>
+            <ComboBox fx:id="tableSelection" prefHeight="25.0" prefWidth="229.0" />
+
+            <Pane prefHeight="41.0" prefWidth="219.0" />
+            <Button fx:id="login" mnemonicParsing="false" onAction="#onLogin" prefHeight="39.0" prefWidth="219.0" stylesheets="@Styles.css" text="Prisijungti" textFill="WHITE">
+               <font>
+                  <Font name="Eras Bold ITC" size="17.0" />
+               </font>
+            </Button>
+            <Pane prefHeight="341.0" prefWidth="219.0" />
+            <Button fx:id="find" mnemonicParsing="false" onAction="#onFind" prefHeight="75.0" prefWidth="227.0" styleClass="" stylesheets="@Styles.css" text="Ieškoti" textFill="WHITE">
+               <font>
+                  <Font name="Eras Bold ITC" size="17.0" />
+               </font>
+            </Button>
+         </VBox>
+      </left>
+      <top>
+         <HBox alignment="CENTER_LEFT" prefHeight="117.0" prefWidth="1314.0" style="-fx-background-color: #191a24;" BorderPane.alignment="CENTER">
+
+            <Pane prefHeight="117.0" prefWidth="718.0">
+               <Text fontSmoothingType="LCD" layoutX="26.0" layoutY="72.0" stroke="WHITE" strokeLineCap="BUTT" strokeLineJoin="BEVEL" strokeWidth="0.0" text="e.Teismas is S.. Super?" wrappingWidth="408.0751953125">
+                  <font>
+                     <Font name="Eras Demi ITC" size="38.0" />
+                  </font>
+                  <fill>
+                     <LinearGradient>
+                        <stops>
+                           <Stop>
+                              <color>
+                                 <Color red="0.8617283701896667" green="0.8518518805503845" blue="1.0" />
+                              </color>
+                           </Stop>
+                           <Stop offset="0.006711409395973154">
+                              <color>
+                                 <Color red="0.8617283701896667" green="0.8518518805503845" blue="1.0" />
+                              </color>
+                           </Stop>
+                           <Stop offset="1.0">
+                              <color>
+                                 <Color red="0.9853395223617554" green="0.9120370149612427" blue="1.0" />
+                              </color>
+                           </Stop>
+                        </stops>
+                     </LinearGradient>
+                  </fill>
+               </Text>
+            </Pane>
+            <Pane prefHeight="117.0" prefWidth="383.0">
+               <Button fx:id="closeButton" onAction="#onClose" layoutX="330.0" layoutY="14.0" mnemonicParsing="false" text="EXIT" textAlignment="CENTER"/>
+               <Text fx:id="curUser" fill="WHITE" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0"
+                     text="Vartotojas:" wrappingWidth="168.13671875">
+                  <font>
+                     <Font name="Eras Medium ITC" size="14.0"/>
+                  </font>
+               </Text>
+            </Pane>
+         </HBox>
+      </top>
+
+      <bottom>
+         <HBox prefHeight="43.0" prefWidth="1393.0" BorderPane.alignment="CENTER" />
+      </bottom>
+
+
+      <center>
+         <VBox alignment="CENTER" prefHeight="393.0" prefWidth="336.0" spacing="10.0" BorderPane.alignment="CENTER">
+            <TableView fx:id="userTable" prefHeight="600.0" prefWidth="730.0">
+
+            </TableView>
+         </VBox>
+      </center>
+   </BorderPane>
+</AnchorPane>

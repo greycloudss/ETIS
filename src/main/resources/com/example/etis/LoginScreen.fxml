@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="contentPaneL" maxHeight="750.0" maxWidth="1100.0" minHeight="515.0" minWidth="953.0" prefHeight="789.0" prefWidth="1298.0" style="-fx-background-color: #212230;" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.etis.LoginScreenController">
+    <BorderPane layoutX="2.0" layoutY="-5.0" prefHeight="756.0" prefWidth="1100.0">
+        <top>
+            <HBox alignment="CENTER_LEFT" prefHeight="117.0" prefWidth="1314.0" style="-fx-background-color: #191a24;" BorderPane.alignment="CENTER">
+
+                <Pane prefHeight="117.0" prefWidth="1102.0">
+                    <Text fontSmoothingType="LCD" layoutX="26.0" layoutY="72.0" stroke="WHITE" strokeLineCap="BUTT" strokeLineJoin="BEVEL" strokeWidth="0.0" text="e.Teismas is S.. Super?" wrappingWidth="408.0751953125">
+                        <font>
+                            <Font name="Eras Demi ITC" size="38.0" />
+                        </font>
+                        <fill>
+                            <LinearGradient>
+                                <stops>
+                                    <Stop>
+                                        <color>
+                                            <Color red="0.8617283701896667" green="0.8518518805503845" blue="1.0" />
+                                        </color>
+                                    </Stop>
+                                    <Stop offset="0.006711409395973154">
+                                        <color>
+                                            <Color red="0.8617283701896667" green="0.8518518805503845" blue="1.0" />
+                                        </color>
+                                    </Stop>
+                                    <Stop offset="1.0">
+                                        <color>
+                                            <Color red="0.9853395223617554" green="0.9120370149612427" blue="1.0" />
+                                        </color>
+                                    </Stop>
+                                </stops>
+                            </LinearGradient>
+                        </fill>
+                    </Text>
+               <Button fx:id="closeButton" layoutX="1047.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClose" text="EXIT" />
+                </Pane>
+
+            </HBox>
+        </top>
+
+        <bottom>
+            <HBox prefHeight="43.0" prefWidth="1393.0" BorderPane.alignment="CENTER">
+                <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Naujienos naujiena naujieniausia - naujiniškiausia naujausia naujiena atnaujinta naujumu ir naujinama naujais naujiniais" wrappingWidth="1096.13671875">
+                    <font>
+                        <Font name="Eras Demi ITC" size="16.0" />
+                    </font>
+                </Text>
+            </HBox>
+        </bottom>
+
+
+        <center>
+            <VBox alignment="CENTER" prefHeight="393.0" prefWidth="336.0" spacing="10.0" BorderPane.alignment="CENTER">
+                <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Prisijungimo Vardas" textAlignment="CENTER" wrappingWidth="316.13671875">
+                    <font>
+                        <Font name="Eras Demi ITC" size="20.0" />
+                    </font>
+                </Text>
+                <TextField  id="username" fx:id="username"/>
+                <Pane prefHeight="35.0" prefWidth="500.0" />
+                <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Slaptažodis" textAlignment="CENTER" wrappingWidth="316.13671875">
+                    <font>
+                        <Font name="Eras Demi ITC" size="20.0" />
+                    </font>
+                </Text>
+                <PasswordField id="password"  fx:id="password"/>
+                <Pane prefHeight="100.0" prefWidth="500.0" />
+                <Button fx:id="login" onAction="#onLogin" prefHeight="37.0" prefWidth="160.0" text="Login" />
+            </VBox>
+        </center>
+      <left>
+         <VBox prefHeight="596.0" prefWidth="300.0" BorderPane.alignment="CENTER" />
+      </left>
+      <right>
+         <VBox prefHeight="596.0" prefWidth="300.0" BorderPane.alignment="CENTER" />
+      </right>
+    </BorderPane>
+</AnchorPane>
