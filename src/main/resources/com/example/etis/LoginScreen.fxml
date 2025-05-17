@@ -15,7 +15,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="contentPaneL" maxHeight="750.0" maxWidth="1100.0" minHeight="515.0" minWidth="953.0" prefHeight="789.0" prefWidth="1298.0" style="-fx-background-color: #212230;" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.etis.LoginScreenController">
+<AnchorPane fx:id="contentPaneL" maxHeight="750.0" maxWidth="1100.0" minHeight="515.0" minWidth="953.0" prefHeight="789.0" prefWidth="1298.0" style="-fx-background-color: #212230;" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.etis.Controllers.LoginScreenController">
     <BorderPane layoutX="2.0" layoutY="-5.0" prefHeight="756.0" prefWidth="1100.0">
         <top>
             <HBox alignment="CENTER_LEFT" prefHeight="117.0" prefWidth="1314.0" style="-fx-background-color: #191a24;" BorderPane.alignment="CENTER">

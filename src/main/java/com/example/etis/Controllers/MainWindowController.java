@@ -1,6 +1,7 @@
-package com.example.etis;
+package com.example.etis.Controllers;
 
 
+import com.example.etis.Helpers.Privilege;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
