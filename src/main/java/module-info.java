@@ -8,8 +8,12 @@ module com.example.etis {
 
     opens com.example.etis to javafx.fxml;
     exports com.example.etis;
-    exports com.example.etis.Helpers;
-    opens com.example.etis.Helpers to javafx.fxml;
+    exports com.example.etis.Query.Helpers;
+    opens com.example.etis.Query.Helpers to javafx.fxml;
     exports com.example.etis.Controllers;
     opens com.example.etis.Controllers to javafx.fxml;
+    exports com.example.etis.Query;
+    opens com.example.etis.Query to javafx.fxml;
+    exports com.example.etis.Query.QueryTools;
+    opens com.example.etis.Query.QueryTools to javafx.fxml;
 }

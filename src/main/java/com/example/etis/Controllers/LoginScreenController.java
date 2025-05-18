@@ -1,5 +1,6 @@
 package com.example.etis.Controllers;
 
+import com.example.etis.Query.QueryTools.QueryHandler;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
@@ -9,6 +10,8 @@ import javafx.util.Pair;
 
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class LoginScreenController {
 
@@ -40,18 +43,27 @@ public class LoginScreenController {
 
 
     @FXML
-    public void onLogin(ActionEvent actionEvent) {
+    public void onLogin(ActionEvent actionEvent) throws SQLException {
 
         username.getText().trim();
         password.getText().trim();
+        creds = new Pair<>(username.getText(), password.getText());
 
         System.out.println(username.getText() + " " + password.getText());
+
+        mContr.setqHandler(new QueryHandler(creds));
 
         //
         //
         //  execute log in block
         //
         //
+
+        try (Connection c = mContr.getqHandler().getConnection()) {
+            System.out.println("Connected successfully!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 }

@@ -1,8 +1,10 @@
-package com.example.etis.Helpers;
+package com.example.etis.Query.Helpers;
+
+import com.example.etis.Query.SQLTable;
 
 import java.sql.Date;
 
-public class Tables {
+public record Tables() {
     /*
     *
     *
@@ -21,7 +23,6 @@ public class Tables {
 
     public record BylosDalyvis(int caseID,  Competency comp,  boolean defendant, int ssn) { }
 
-    public record ProcessAttendee(String firstname, String lastname, int ssn, String email, int phoneNumber, boolean ableness, int compNumber) { }
-
+    public record ProcesoDalyvis(String firstname, String lastname, int ssn, String email, int phoneNumber, boolean ableness, int compNumber) { }
 
 }

@@ -1,4 +1,4 @@
-package com.example.etis.Helpers;
+package com.example.etis.Query.Helpers;
 
 public enum Privilege {
     root,

@@ -1,7 +1,10 @@
 package com.example.etis.Controllers;
 
 
-import com.example.etis.Helpers.Privilege;
+import com.example.etis.Query.Helpers.Privilege;
+import com.example.etis.Query.Helpers.Tables;
+import com.example.etis.Query.QueryTools.QueryHandler;
+import com.example.etis.Query.SQLTable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -47,6 +50,7 @@ public class MainWindowController {
 
     private LoginScreenController logContr;
 
+    private QueryHandler qHandler;
 
     public Button closeButton;
 
@@ -70,6 +74,13 @@ public class MainWindowController {
     ObjectProperty<Privilege> status = new SimpleObjectProperty<Privilege>(null);
 
     private Pair<String, String> creds;
+
+    private SQLTable<Tables.Teismas> teismasSQLTable;
+    private SQLTable<Tables.BylosDetales> bylosDetalesSQLTable;
+    private SQLTable<Tables.Byla> bylaSQLTable;
+    private SQLTable<Tables.BylosPosedis> bylosPosedisSQLTable;
+    private SQLTable<Tables.BylosDalyvis> bylosDalyvisSQLTable;
+    private SQLTable<Tables.ProcesoDalyvis> procesodalyvisSQLTable;
 
     @FXML
     public void initialize() {
@@ -105,6 +116,7 @@ public class MainWindowController {
     }
 
 
+
     @FXML
     public AnchorPane contentPane;
 
@@ -126,7 +138,7 @@ public class MainWindowController {
     @FXML
     void onLogin() throws IOException {
 
-        logContr = switchView("LoginScreen.fxml", mainWindowController -> {
+        logContr = switchView("/com/example/etis/LoginScreen.fxml", mainWindowController -> {
             try {
                 return new LoginScreenController(mainWindowController);
             } catch (IOException e) {
@@ -139,7 +151,6 @@ public class MainWindowController {
         loginHide();
 
     }
-
 
     public <C> C switchView(String fxmlPath, Function<MainWindowController, C> controllerFactory) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -160,5 +171,13 @@ public class MainWindowController {
 
     public void setLogContr(LoginScreenController logContr) {
         this.logContr = logContr;
+    }
+
+    public QueryHandler getqHandler() {
+        return qHandler;
+    }
+
+    public void setqHandler(QueryHandler qHandler) {
+        this.qHandler = qHandler;
     }
 }
