@@ -18,6 +18,7 @@ import javafx.scene.text.Text;
 import javafx.util.Pair;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.function.Function;
 
 /*
@@ -75,7 +76,7 @@ public class MainWindowController {
 
     private Pair<String, String> creds;
 
-    private SQLTable<Tables.Teismas> teismasSQLTable;
+    private SQLTable<Tables.Teismai> teismaiSQLTable;
     private SQLTable<Tables.BylosDetales> bylosDetalesSQLTable;
     private SQLTable<Tables.Byla> bylaSQLTable;
     private SQLTable<Tables.BylosPosedis> bylosPosedisSQLTable;
@@ -136,7 +137,7 @@ public class MainWindowController {
     }
 
     @FXML
-    void onLogin() throws IOException {
+    void onLogin() throws IOException, SQLException {
 
         logContr = switchView("/com/example/etis/LoginScreen.fxml", mainWindowController -> {
             try {
@@ -146,6 +147,9 @@ public class MainWindowController {
             }
         });
 
+
+        teismasSQLTable.selectQuery();
+        teismasSQLTable.getRows();
 
         if (privs == Privilege.user) return;
         loginHide();

@@ -1,7 +1,7 @@
 package com.example.etis.Query.Helpers;
 
 public enum ClassMap {
-    Teismas,
+    Teismai,
     BylosDetales,
     Byla,
     BylosPosedis,

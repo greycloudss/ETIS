@@ -20,7 +20,7 @@ public class SQLTable<Row> extends QueryBuilder<Row> {
         rowCount = RowClass.getDeclaredFields().length;
     }
 
-    public List<Row> returnRows() {
+    public List<Row> getRows() {
         return rows;
     }
 

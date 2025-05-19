@@ -1,6 +1,6 @@
 package com.example.etis.Query.Helpers;
 
-import com.example.etis.Query.SQLTable;
+import com.example.etis.Query.Helpers.Types.kompetencija;
 
 import java.sql.Date;
 
@@ -13,16 +13,16 @@ public record Tables() {
     *
     */
 
-    public record Teismas(int courtID, String name, String courtType, String Address) { }
+    public record Teismai(int teismasID, String pavadinimas, String tipas, String vieta) { }
 
-    public record BylosDetales(int caseID, String tldr, Date sDate) { }
+    public record BylosDetales(int bylosID, String bylosapibendr, Date bylospradziosdata) { }
 
-    public record Byla(int caseID, int caseNum, String status, String courtType, String caseType) { }
+    public record Byla(int bylosID, int bylosNum, String status, String teismoTipas, String bylosTipas) { }
 
-    public record BylosPosedis(int hearingID, int caseID, int caseNum, Date sDate, int courtID, String address, String bkStatus) { }
+    public record BylosPosedis(int posedzioID, int bylosID, int bylosNum, Date sDate, int courtID, String address, String bkStatus) { }
 
-    public record BylosDalyvis(int caseID,  Competency comp,  boolean defendant, int ssn) { }
+    public record BylosDalyvis(int bylosID, kompetencija kompetencija, boolean salis, int ak) { }
 
-    public record ProcesoDalyvis(String firstname, String lastname, int ssn, String email, int phoneNumber, boolean ableness, int compNumber) { }
+    public record ProcesoDalyvis(String vardas, String pavarde, int ak, String email, int telnr, boolean neveiksnumas, int pazymejimonr) { }
 
 }

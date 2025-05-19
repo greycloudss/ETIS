@@ -16,4 +16,8 @@ module com.example.etis {
     opens com.example.etis.Query to javafx.fxml;
     exports com.example.etis.Query.QueryTools;
     opens com.example.etis.Query.QueryTools to javafx.fxml;
+    exports com.example.etis.Query.Helpers.Types;
+    opens com.example.etis.Query.Helpers.Types to javafx.fxml;
+    exports com.example.etis.Query.Helpers.EnumHelper;
+    opens com.example.etis.Query.Helpers.EnumHelper to javafx.fxml;
 }
