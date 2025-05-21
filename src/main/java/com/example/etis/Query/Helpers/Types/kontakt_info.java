@@ -1,23 +1,23 @@
 package com.example.etis.Query.Helpers.Types;
 
-public class kontakt_info {
-    int telNr;
-    String email;
 
-    kontakt_info(int telNr, String email) {
-        this.telNr = telNr;
-        this.email = email;
+import org.postgresql.util.PGobject;
+
+import java.sql.SQLException;
+
+public final class kontakt_info extends PGobject {
+    public String tel;
+    public String email;
+    public kontakt_info() { setType("kontakt_info"); }
+    public kontakt_info(String tel, String email) { this(); this.tel = tel; this.email = email; }
+
+    @Override public void setValue(String v) throws SQLException {
+        String s = v.substring(1, v.length() - 1);          // strip ( )
+        String[] parts = s.split(",", 2);
+        tel   = parts[0].replace("\"", "");
+        email = parts[1].replace("\"", "");
     }
-
-    public int getTelNr() {
-        return telNr;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String returnString() {
-        return "("+ telNr + ",'" + email + "')";
+    @Override public String getValue() {
+        return "(" + tel + "," + email + ")";
     }
 }

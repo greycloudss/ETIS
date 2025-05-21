@@ -1,8 +1,11 @@
 package com.example.etis.Controllers;
 
+import com.example.etis.Query.Helpers.Privilege;
 import com.example.etis.Query.QueryTools.QueryHandler;
-import javafx.event.ActionEvent;
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -12,6 +15,7 @@ import javafx.util.Pair;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.function.Function;
 
 public class LoginScreenController {
 
@@ -23,7 +27,7 @@ public class LoginScreenController {
 
     Pair<String, String> creds;
 
-    MainWindowController mContr;
+    final MainWindowController mContr;
 
     public LoginScreenController(MainWindowController mainWindowController) throws IOException {
         mContr = mainWindowController;
@@ -40,30 +44,24 @@ public class LoginScreenController {
     @FXML
     public AnchorPane contentPaneL;
 
-
+    private <C> C switchView(String fxmlPath) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        Parent view = loader.load();
+        contentPaneL.getChildren().setAll(view);
+        return loader.getController();
+    }
 
     @FXML
-    public void onLogin(ActionEvent actionEvent) throws SQLException {
+    private void onLogin() throws Exception {
+        String u = username.getText().trim();
+        String p = password.getText().trim();
 
-        username.getText().trim();
-        password.getText().trim();
-        creds = new Pair<>(username.getText(), password.getText());
+        QueryHandler qh = new QueryHandler(new Pair<>(u, p));
 
-        System.out.println(username.getText() + " " + password.getText());
+        MainWindowController main =
+                switchView("/com/example/etis/hello-view.fxml");
 
-        mContr.setqHandler(new QueryHandler(creds));
-
-        //
-        //
-        //  execute log in block
-        //
-        //
-
-        try (Connection c = mContr.getqHandler().getConnection()) {
-            System.out.println("Connected successfully!");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
+        main.setqHandler(qh);
+        main.statusProperty().set(u);
     }
 }

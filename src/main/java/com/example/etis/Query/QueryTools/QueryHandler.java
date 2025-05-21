@@ -1,6 +1,7 @@
 package com.example.etis.Query.QueryTools;
 
 import javafx.util.Pair;
+import org.postgresql.PGConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ public class QueryHandler {
 
     public QueryHandler(Pair<String, String> creds) throws SQLException {
         this.conn = DriverManager.getConnection(dbUrl, creds.getKey().trim(), creds.getValue().trim());
+        PGConnection pg = conn.unwrap(org.postgresql.PGConnection.class);
+        pg.addDataType("kontakt_info", com.example.etis.Query.Helpers.Types.kontakt_info.class);
     }
 
     public Connection getConnection() throws SQLException {

@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLTable<Row> extends QueryBuilder<Row> {
-    private final List<Row> rows = new ArrayList<>();
+    private List<Row> rows = new ArrayList<>();
     private final QueryHandler handler;
     private final Class<Row> RowClass;
     private final int rowCount;
 
-    SQLTable(QueryHandler handler, Class<Row> RowClass) {
-        super(RowClass.getName().toLowerCase());
+    public SQLTable(QueryHandler handler, Class<Row> RowClass) throws SQLException {
+        super(RowClass.getSimpleName().toLowerCase());
         this.RowClass = RowClass;
         this.handler = handler;
         rowCount = RowClass.getDeclaredFields().length;
@@ -27,7 +27,7 @@ public class SQLTable<Row> extends QueryBuilder<Row> {
     public List<Row> selectQuery() throws SQLException {
         rows.clear();
 
-        handler.executeSelect(super.select(), QueryBuilder.recordMapper(RowClass));
+        rows = handler.executeSelect(super.select(), QueryBuilder.recordMapper(RowClass));
 
         return rows;
     }

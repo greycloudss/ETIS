@@ -6,7 +6,7 @@ public enum kompetencija implements LabeledEnum {
     ADVOKATAS("Advokatas"),
     TEISEJAS("Teisejas"),
     PROKURORAS("Prokuroras"),
-    TEISEJO_SEKRETORĖ("Teisejo Sekretore");
+    TEISEJO_SEKRETORĖ("Teisejo sekretorė");
 
     private final String label;
 

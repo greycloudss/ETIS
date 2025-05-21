@@ -1,8 +1,9 @@
 package com.example.etis.Query.Helpers;
 
-import com.example.etis.Query.Helpers.Types.kompetencija;
+import com.example.etis.Query.Helpers.Types.*;
 
 import java.sql.Date;
+import java.time.OffsetDateTime;
 
 public record Tables() {
     /*
@@ -13,16 +14,21 @@ public record Tables() {
     *
     */
 
-    public record Teismai(int teismasID, String pavadinimas, String tipas, String vieta) { }
+    public record Teismai(int teismasID, String pavadinimas, teismas tipas, String vieta) { }
 
     public record BylosDetales(int bylosID, String bylosapibendr, Date bylospradziosdata) { }
 
-    public record Byla(int bylosID, int bylosNum, String status, String teismoTipas, String bylosTipas) { }
+    public record Byla(int bylosID, String bylosNum, bylosStatusas status, teismas teismoTipas, bylosTipas bylosTipas) { }
 
-    public record BylosPosedis(int posedzioID, int bylosID, int bylosNum, Date sDate, int courtID, String address, String bkStatus) { }
+    public record Bylos_Posedziai(int posedzioID, int bylosID, bylosTipas tipas, OffsetDateTime data, int teismasID, String vieta, bkStatusas status) { }
 
-    public record BylosDalyvis(int bylosID, kompetencija kompetencija, boolean salis, int ak) { }
+    public record Bylos_Dalyviai(int bylosID, kompetencija kompetencija, salis salis, int ak) { }
 
-    public record ProcesoDalyvis(String vardas, String pavarde, int ak, String email, int telnr, boolean neveiksnumas, int pazymejimonr) { }
+    public record ProcesoDalyvis(String vardas, String pavarde, int ak, String email, int telnr, boolean neveiksnumas, int pazymejimonr, kontakt_info kontakt_info) { }
 
+    public record Ateinantys_Posedziai(int bylosID, String bylosNum, String pavadinimas, OffsetDateTime data, String vieta) { }
+
+    public record Bylos_Eigoje(String bylosNum, bylosStatusas status, teismas teismoTipas) { }
+
+    public record Bylos_Ilgio_Metrika(int bylosID, String bylosNum, Date pirmas_posedis, Date paskutinis_posedis, int dienu_metrika) { }
 }

@@ -48,14 +48,10 @@ public class QueryBuilder<Row> {
 
     public static <R> Function<ResultSet, R> recordMapper(Class<R> recordClass) {
         RecordComponent[] comps = recordClass.getRecordComponents();
-        Class<?>[] types     = Arrays.stream(comps)
-                .map(RecordComponent::getType)
-                .toArray(Class<?>[]::new);
+        Class<?>[] types = Arrays.stream(comps).map(RecordComponent::getType).toArray(Class<?>[]::new);
         Constructor<R> ctor;
         try {
-            @SuppressWarnings("unchecked")
-            Constructor<R> c = (Constructor<R>) recordClass.getDeclaredConstructor(types);
-            ctor = c;
+            ctor = recordClass.getDeclaredConstructor(types);
             ctor.setAccessible(true);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
@@ -67,12 +63,21 @@ public class QueryBuilder<Row> {
                     String name = comps[i].getName();
                     Class<?> t  = comps[i].getType();
                     args[i] = switch (t.getName()) {
-                        case "int", "java.lang.Integer" -> rs.getInt(name);
-                        case "long", "java.lang.Long" -> rs.getLong(name);
+                        case "int", "java.lang.Integer"   -> rs.getInt(name);
+                        case "long", "java.lang.Long"     -> rs.getLong(name);
                         case "double", "java.lang.Double" -> rs.getDouble(name);
-                        case "boolean", "java.lang.Boolean" -> rs.getBoolean(name);
-                        case "java.lang.String" -> rs.getString(name);
-                        default -> rs.getObject(name, t);
+                        case "boolean","java.lang.Boolean"-> rs.getBoolean(name);
+                        case "java.lang.String"           -> rs.getString(name);
+                        default -> {
+                            String raw = rs.getString(name);
+                            if (raw == null)               yield null;
+                            if (com.example.etis.Query.Helpers.EnumHelper.LabeledEnum.class.isAssignableFrom(t))
+                                yield com.example.etis.Query.Helpers.EnumHelper.EnumUtil.fromLabel((Class) t, raw.trim());
+                            if (t.isEnum())
+                                yield Enum.valueOf((Class<? extends Enum>) t,
+                                        raw.trim().toUpperCase().replace(' ', '_').replace('-', '_'));
+                            yield rs.getObject(name, t);
+                        }
                     };
 
                 }
@@ -82,5 +87,6 @@ public class QueryBuilder<Row> {
             }
         };
     }
+
 }
 
