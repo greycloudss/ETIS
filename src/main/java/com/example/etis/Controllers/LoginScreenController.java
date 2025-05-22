@@ -63,5 +63,6 @@ public class LoginScreenController {
 
         main.setqHandler(qh);
         main.statusProperty().set(u);
+        main.setCreds(new Pair<>(u, p));
     }
 }

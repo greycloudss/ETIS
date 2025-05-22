@@ -2,7 +2,9 @@ package com.example.etis.Controllers;
 
 
 import com.example.etis.Query.Helpers.Privilege;
+import com.example.etis.Query.Helpers.RecordUtil;
 import com.example.etis.Query.Helpers.Tables;
+import com.example.etis.Query.QueryTools.QueryBuilder;
 import com.example.etis.Query.QueryTools.QueryHandler;
 import com.example.etis.Query.SQLTable;
 import javafx.beans.property.ObjectProperty;
@@ -11,22 +13,29 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Pair;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static jdk.javadoc.internal.tool.Main.execute;
 
 /*
 
@@ -55,7 +64,6 @@ import java.util.function.Function;
 
 
 public class MainWindowController {
-
     private LoginScreenController logContr;
 
     private QueryHandler qHandler;
@@ -69,16 +77,10 @@ public class MainWindowController {
     public Button login;
 
     @FXML
-    public Button find;
-
-    @FXML
     public TableView<Object> userTable;
 
     @FXML
-    public ComboBox<String> tableSelection;
-
-    @FXML
-    private TableView<ObservableList<?>> dataView;
+    public ComboBox<String> tableSelection, tableActions;
 
     private Privilege privs;
 
@@ -88,8 +90,15 @@ public class MainWindowController {
 
     private boolean loggedIn = false;
 
+    private Pair<String, String> creds = new Pair<>("", "");
+
+    private Class<?> currentRowType;
+
+    @FXML
+    public AnchorPane contentPane;
+
+
     private SQLTable<Tables.Teismai> teismaiSQLTable;
-    private SQLTable<Tables.BylosDetales> bylosDetalesSQLTable;
     private SQLTable<Tables.Byla> bylaSQLTable;
     private SQLTable<Tables.Bylos_Posedziai> bylosPosedziaiSQLTable;
     private SQLTable<Tables.Bylos_Dalyviai> bylosDalyviaiSQLTable;
@@ -98,8 +107,15 @@ public class MainWindowController {
     private SQLTable<Tables.Bylos_Eigoje> BylosEigojeSQLTable;
     private SQLTable<Tables.Ateinantys_Posedziai> ateinantysPosedziaiSQLTable;
 
+    @FXML
+    private Pane queryPane;
+
+    String regexKeyword;
+
+
     public <T> void refreshTable(SQLTable<T> sqlTable, Class<T> clazz) throws SQLException {
         userTable.getColumns().clear();
+        currentRowType = clazz;
         for (RecordComponent rc : clazz.getRecordComponents()) {
             TableColumn<Object, Object> col = new TableColumn<>(rc.getName());
             col.setCellValueFactory(cd -> {
@@ -116,26 +132,16 @@ public class MainWindowController {
         userTable.setItems(FXCollections.observableArrayList(sqlTable.selectQuery()));
     }
 
-
-
     @FXML
     public void initialize() throws SQLException {
+        curUser.setText("Vartotojas: viešas");
 
-        tableSelection.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
-            try {
-                switch (n) {
-                    case "Teismai"                      -> refreshTable(teismaiSQLTable                    ,     Tables.Teismai.class);
-                    case "Bylu ilgio metrika"           -> refreshTable(Bylu_Ilgio_MetrikaSQLTable         ,     Tables.Bylos_Ilgio_Metrika.class);
-                    case "Bylos Eigoje"                 -> refreshTable(BylosEigojeSQLTable                ,     Tables.Bylos_Eigoje.class);
-                    case "Byla"                         -> refreshTable(bylaSQLTable                       ,     Tables.Byla.class);
-                    case "Posedziai"                    -> refreshTable(bylosPosedziaiSQLTable             ,     Tables.Bylos_Posedziai.class);
-                    case "Bylos Dalyviai"               -> refreshTable(bylosDalyviaiSQLTable              ,     Tables.Bylos_Dalyviai.class);
-                    case "Proceso Dalyviai"             -> refreshTable(procesodalyvisSQLTable             ,     Tables.ProcesoDalyvis.class);
-                    case "Bylos Detales"                -> refreshTable(bylosDetalesSQLTable               ,     Tables.BylosDetales.class);
-                    case "Ateinantys Posedziai"         -> refreshTable(ateinantysPosedziaiSQLTable        ,     Tables.Ateinantys_Posedziai.class);
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+        tableActions.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+            switch (n) {
+                case "Pateikti naujus duomenis" -> displayInsert();
+                case "Sujungti" -> displayJoins();
+                case "Pakeisti duomenis" -> displaySet();
+                case "Peržiūtėti duomenis" -> queryPane.getChildren().clear();
             }
         });
 
@@ -147,27 +153,205 @@ public class MainWindowController {
             }
         });
 
-        status.addListener((o, ov, nv) -> curUser.setText(nv));
-
         userTextUpdate(Privilege.root);
-
     }
 
-    void userTextUpdate(Privilege priv) {
-        this.privs = priv;
+
+    ObservableList<String> componentsToString(RecordComponent[] comps) {
+        ObservableList<String> list = FXCollections.observableArrayList();
+        if (comps != null)
+            for (RecordComponent rc : comps) list.add(rc.getName());
+        return list;
     }
+
+    private Object convert(String raw, Class<?> t) {
+        if (raw == null || raw.isEmpty()) return null;
+        if (t == String.class) return raw;
+        if (t == int.class || t == Integer.class)    return Integer.valueOf(raw);
+        if (t == long.class|| t == Long.class)       return Long.valueOf(raw);
+        if (t == double.class|| t == Double.class)   return Double.valueOf(raw);
+        if (t == boolean.class|| t == Boolean.class) return Boolean.valueOf(raw);
+        if (t.isEnum()) return Enum.valueOf((Class<Enum>)t, raw);
+
+        throw new IllegalArgumentException("Unsupported type " + t);
+    }
+
+    private void displaySet() {
+        queryPane.getChildren().clear();
+        String key = tableSelection.getValue();
+        if (key == null) return;
+        @SuppressWarnings("unchecked")
+        SQLTable<Object> tbl = (SQLTable<Object>) map.get(key);
+        if (tbl == null) return;
+        Class<?> rc = tbl.getRowClass();
+        RecordComponent[] comps = rc.getRecordComponents();
+        ComboBox<String> cols = new ComboBox<>(
+                FXCollections.observableArrayList(
+                        Arrays.stream(comps).map(RecordComponent::getName).toList()
+                )
+        );
+
+        cols.getSelectionModel().selectFirst();
+        TextField idField = new TextField();
+        idField.setPromptText("ID");
+        TextField newVal = new TextField();
+        newVal.setPromptText("Nauja reikšmė");
+        Button apply = new Button("Pakeisti");
+        apply.getStyleClass().setAll(login.getStyleClass());
+        apply.setOnAction(e -> {
+            try {
+                tbl.updateColumnById(cols.getValue(), idField.getText(), newVal.getText());
+                refreshTable(tbl, (Class<Object>)rc);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+        Label stul = new Label("Stulpelis:");
+        Label idd= new Label("ID:");
+        Label val = new Label("Reikšmė:");
+
+        stul.setFont(new Font("Eras Demi ITC", 10));
+        stul.setTextFill(Color.WHITE);
+
+        idd.setFont(new Font("Eras Demi ITC", 10));
+        idd.setTextFill(Color.WHITE);
+
+        val.setFont(new Font("Eras Demi ITC", 10));
+        val.setTextFill(Color.WHITE);
+
+
+        HBox form = new HBox(5, stul, cols);
+        HBox form1 = new HBox(5, idd, idField);
+        HBox form2 = new HBox(5, val, newVal);
+        HBox form3 = new HBox(5, apply);
+
+        VBox form4 = new VBox(5, form, form1, form2, form3);
+
+        form.getChildren().stream()
+                .filter(n -> n instanceof Label)
+                .map(n -> (Label)n)
+                .forEach(lbl -> {
+                    lbl.setFont(new Font("Eras Demi ITC", 10));
+                    lbl.setTextFill(Color.WHITE);
+                });
+        queryPane.getChildren().add(form4);
+    }
+
+    private void displayInsert() {
+        queryPane.getChildren().clear();
+        String key = tableSelection.getValue();
+        if (key == null) return;
+        @SuppressWarnings("unchecked")
+        SQLTable<Object> table = (SQLTable<Object>) map.get(key);
+        if (table == null) return;
+        Class<?> rcType = table.getRowClass();
+        RecordComponent[] comps = rcType.getRecordComponents();
+        VBox form = new VBox(6);
+        List<Control> inputs = new ArrayList<>();
+        for (var comp : comps) {
+            HBox row = new HBox(4);
+            Label lbl = new Label(comp.getName() + ":");
+            lbl.setFont(new Font("Eras Demi ITC", 10));
+            lbl.setTextFill(Color.WHITE);
+            Control input = comp.getType().isEnum()
+                    ? new ComboBox<>(FXCollections.observableArrayList(
+                    Arrays.stream(comp.getType().getEnumConstants()).map(Object::toString).toList()))
+                    : new TextField();
+            if (input instanceof ComboBox<?> cb) cb.getSelectionModel().selectFirst();
+            inputs.add(input);
+            row.getChildren().addAll(lbl, input);
+            form.getChildren().add(row);
+        }
+        Button submit = new Button("Įtraukti");
+        submit.getStyleClass().setAll(login.getStyleClass());
+        submit.setOnAction(e -> {
+            try {
+                Object[] args = new Object[comps.length];
+                for (int i = 0; i < comps.length; i++) {
+                    Control c = inputs.get(i);
+                    String raw = (c instanceof ComboBox<?> cb)
+                            ? cb.getValue().toString()
+                            : ((TextField)c).getText();
+                    args[i] = convert(raw, comps[i].getType());
+                }
+
+                Constructor<?> ctor = rcType.getDeclaredConstructor(
+                        Arrays.stream(comps)
+                                .map(RecordComponent::getType)
+                                .toArray(Class[]::new)
+                );
+                Object row = ctor.newInstance(args);
+
+                table.insertQuery(row);
+
+                refreshTable(table, (Class<Object>)rcType);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        form.getChildren().add(submit);
+        queryPane.getChildren().add(form);
+    }
+
+    private void displayJoins() {
+        queryPane.getChildren().clear();
+        String leftKey = tableSelection.getValue();
+        if (leftKey == null) return;
+        SQLTable<?> leftTbl = map.get(leftKey);
+        if (leftTbl == null) return;
+        List<Class<?>> joinClasses = RecordUtil.findTableJoin(leftTbl.getRowClass());
+        List<String> rightKeys = new ArrayList<>();
+        for (var entry : map.entrySet()) {
+            if (!entry.getKey().equals(leftKey)
+                    && joinClasses.contains(entry.getValue().getRowClass())) {
+                rightKeys.add(entry.getKey());
+            }
+        }
+        if (rightKeys.isEmpty()) {
+            queryPane.getChildren().add(new Label("Nėra lentelių su bendrais laukais"));
+            return;
+        }
+        ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList(rightKeys));
+        cb.getSelectionModel().selectFirst();
+        Button b = new Button("Sujungti");
+        b.getStyleClass().setAll(login.getStyleClass());
+        b.setOnAction(e -> {
+            userTable.getColumns().clear();
+            String rightKey = cb.getValue();
+            SQLTable<?> rightTbl = map.get(rightKey);
+            String sql = QueryBuilder.joinQuery(
+                    leftTbl.getRowClass(), leftTbl.getTableName(),
+                    rightTbl.getRowClass(), rightTbl.getTableName()
+            );
+            List<List<?>> raw;
+            try {
+                raw = qHandler.executeRawSelect(sql);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            showRawInUserTable(raw);
+        });
+        queryPane.getChildren().add(new HBox(5, cb, b));
+    }
+
+    private void showRawInUserTable(List<List<?>> raw){
+        userTable.getColumns().clear();
+        if(raw.isEmpty())return;
+        int c=raw.get(0).size();
+        for(int i=0;i<c;i++){
+            int idx=i;
+            TableColumn<Object,Object> col=new TableColumn<>("C"+(i+1));
+            col.setCellValueFactory(cd->new SimpleObjectProperty<>(((List<?>)cd.getValue()).get(idx)));
+            userTable.getColumns().add(col);
+        }
+        userTable.setItems(FXCollections.observableArrayList(raw));
+    }
+
 
     @FXML
-    void onFind() {
+    void onDrop() {
 
-    }
-
-    @FXML
-    public AnchorPane contentPane;
-
-    public void onClose() {
-        System.gc();
-        System.exit(0);
     }
 
     @FXML
@@ -196,19 +380,36 @@ public class MainWindowController {
 
     private void refresh() throws SQLException {
         String key = tableSelection.getValue();
-        if (key == null || !map.containsKey(key)) return;
+        SQLTable<?> tbl = map.get(key);
+        if (tbl == null) return;
 
-        ObservableList<List<?>> raw = (ObservableList<List<?>>) map.get(key).selectQuery();
-        ObservableList<ObservableList<?>> rows = FXCollections.observableArrayList();
-        for (List<?> r : raw) rows.add(FXCollections.observableArrayList(r));
-        dataView.setItems(rows);
+        List<?> rawRows = tbl.selectQuery();
+        ObservableList<ObservableList<?>> items = FXCollections.observableArrayList();
+
+        for (Object row : rawRows) {
+            if (row instanceof List<?> rowList) {
+                items.add(FXCollections.observableArrayList(rowList));
+            } else {
+                RecordComponent[] comps = row.getClass().getRecordComponents();
+                ObservableList<Object> vals = FXCollections.observableArrayList();
+                for (var rc : comps) {
+                    try { vals.add(rc.getAccessor().invoke(row)); }
+                    catch (Exception e) { vals.add(null); }
+                }
+                items.add(vals);
+            }
+        }
+
+        userTable.getItems().clear();
+        userTable.getItems().addAll(items);
     }
+
+
 
     public void setqHandler(QueryHandler qh) throws SQLException {
         qHandler = qh;
 
         teismaiSQLTable             = new SQLTable<>(qHandler, Tables.Teismai.class);
-        bylosDetalesSQLTable        = new SQLTable<>(qHandler, Tables.BylosDetales.class);
         bylaSQLTable                = new SQLTable<>(qHandler, Tables.Byla.class);
         bylosPosedziaiSQLTable      = new SQLTable<>(qHandler, Tables.Bylos_Posedziai.class);
         bylosDalyviaiSQLTable       = new SQLTable<>(qHandler, Tables.Bylos_Dalyviai.class);
@@ -217,12 +418,54 @@ public class MainWindowController {
         Bylu_Ilgio_MetrikaSQLTable  = new SQLTable<>(qHandler, Tables.Bylos_Ilgio_Metrika.class);
         ateinantysPosedziaiSQLTable = new SQLTable<>(qHandler, Tables.Ateinantys_Posedziai.class);
 
+        map.put("Teismai", teismaiSQLTable);
+        map.put("Posedziai", bylosPosedziaiSQLTable);
+        map.put("Bylu ilgio metrika", Bylu_Ilgio_MetrikaSQLTable);
+        map.put("Byla", bylaSQLTable);
+        map.put("Bylos Dalyviai", bylosDalyviaiSQLTable);
+        map.put("Proceso Dalyviai", procesodalyvisSQLTable);
+        map.put("Bylos Eigoje", BylosEigojeSQLTable);
+        map.put("Ateinantys Posedziai", ateinantysPosedziaiSQLTable);
+
         tableSelection.getItems().setAll(
                 "Teismai", "Posedziai", "Bylu ilgio metrika",
                 "Byla", "Bylos Dalyviai", "Proceso Dalyviai",
                 "Bylos Eigoje",  "Ateinantys Posedziai"
         );
+
+        tableActions.getItems().setAll("Peržiūtėti duomenis",
+                "Pateikti naujus duomenis", "Sujungti", "Pakeisti duomenis");
+
+        tableSelection.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+            if (n == null) return;
+            if (tableActions.getSelectionModel().getSelectedItem() == null) return;
+            try {
+                switch (n) {
+                    case "Teismai"                      -> refreshTable(teismaiSQLTable                    ,     Tables.Teismai.class);
+                    case "Bylu ilgio metrika"           -> refreshTable(Bylu_Ilgio_MetrikaSQLTable         ,     Tables.Bylos_Ilgio_Metrika.class);
+                    case "Bylos Eigoje"                 -> refreshTable(BylosEigojeSQLTable                ,     Tables.Bylos_Eigoje.class);
+                    case "Byla"                         -> refreshTable(bylaSQLTable                       ,     Tables.Byla.class);
+                    case "Posedziai"                    -> refreshTable(bylosPosedziaiSQLTable             ,     Tables.Bylos_Posedziai.class);
+                    case "Bylos Dalyviai"               -> refreshTable(bylosDalyviaiSQLTable              ,     Tables.Bylos_Dalyviai.class);
+                    case "Proceso Dalyviai"             -> refreshTable(procesodalyvisSQLTable             ,     Tables.ProcesoDalyvis.class);
+                    case "Ateinantys Posedziai"         -> refreshTable(ateinantysPosedziaiSQLTable        ,     Tables.Ateinantys_Posedziai.class);
+                }
+                switch (tableActions.getValue()) {
+                    case "Pateikti naujus duomenis" -> displayInsert();
+                    case "Sujungti" -> displayJoins();
+                    case "Pakeisti duomenis" -> displaySet();
+                    case "Peržiūtėti duomenis" -> queryPane.getChildren().clear();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        tableActions.getSelectionModel().selectFirst();
         tableSelection.getSelectionModel().selectFirst();
+
+
+        regexKeyword = qHandler.buildPostgresKeywordsRegex();
     }
 
     public void setPrivs(Privilege privs) {
@@ -237,10 +480,15 @@ public class MainWindowController {
         this.logContr = logContr;
     }
 
+    public void setCreds(Pair<String, String> creds) {
+        this.creds = creds;
+        curUser.setText(curUser.getText().replace("viešas", creds.getKey().trim()));
+        login.setVisible(false);
+    }
+
     public QueryHandler getqHandler() {
         return qHandler;
     }
-
 
     public boolean isLoggedIn() {
         return loggedIn;
@@ -248,5 +496,19 @@ public class MainWindowController {
 
     public void setLoggedIn(boolean loggedIn) {
         this.loggedIn = loggedIn;
+    }
+
+    void userTextUpdate(Privilege priv) {
+        this.privs = priv;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void insertInto(SQLTable<T> table, Object row) {
+        table.insert((T) row);
+    }
+
+    public void onClose() {
+        System.gc();
+        System.exit(0);
     }
 }

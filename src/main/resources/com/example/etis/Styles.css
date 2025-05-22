@@ -13,7 +13,7 @@
     -fx-border-width: 0px;
 }
 
-#find {
+#find, #login, #dropy {
     -fx-background-color: #2a2d45;
     -fx-alignment: center;
     -fx-border-radius: 0%;
@@ -21,23 +21,12 @@
     -fx-text-fill: white;
 }
 
-#find:hover {
+#find:hover, #login:hover, #dropy:hover {
     -fx-background-color: #322e52;
     -fx-text-fill: white;
 }
 
-#login {
-    -fx-background-color: #2a2d45;
-    -fx-alignment: center;
-    -fx-border-radius: 0%;
-    -fx-border-width: 0px;
-    -fx-text-fill: white;
-}
 
-#login:hover {
-    -fx-background-color: #322e52;
-    -fx-text-fill: white;
-}
 
 #choiceBox {
     -fx-background-color: #2a2d45;

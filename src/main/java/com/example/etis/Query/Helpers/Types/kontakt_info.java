@@ -12,7 +12,7 @@ public final class kontakt_info extends PGobject {
     public kontakt_info(String tel, String email) { this(); this.tel = tel; this.email = email; }
 
     @Override public void setValue(String v) throws SQLException {
-        String s = v.substring(1, v.length() - 1);          // strip ( )
+        String s = v.substring(1, v.length() - 1);
         String[] parts = s.split(",", 2);
         tel   = parts[0].replace("\"", "");
         email = parts[1].replace("\"", "");

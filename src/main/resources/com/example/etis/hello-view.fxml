@@ -14,31 +14,30 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="contentPane" maxHeight="750.0" maxWidth="1100.0" minHeight="515.0" minWidth="953.0" prefHeight="789.0" prefWidth="1298.0" style="-fx-background-color: #212230;" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.etis.Controllers.MainWindowController">
+<AnchorPane fx:id="contentPane" maxHeight="750.0" maxWidth="1100.0" minHeight="515.0" minWidth="953.0" prefHeight="789.0" prefWidth="1298.0" style="-fx-background-color: #212230;" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.etis.Controllers.MainWindowController">
    <BorderPane layoutX="2.0" layoutY="-5.0" prefHeight="756.0" prefWidth="1100.0">
       <left>
          <VBox alignment="TOP_CENTER" prefHeight="596.0" prefWidth="219.0" BorderPane.alignment="CENTER">
-
-            <Pane prefHeight="51.0" prefWidth="219.0" />
             <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Duomenų lentelės" wrappingWidth="216.13671875">
                <font>
                   <Font name="Eras Demi ITC" size="20.0" />
                </font>
             </Text>
             <ComboBox fx:id="tableSelection" prefHeight="25.0" prefWidth="229.0" />
-
-            <Pane prefHeight="41.0" prefWidth="219.0" />
-            <Button fx:id="login" mnemonicParsing="false" onAction="#onLogin" prefHeight="39.0" prefWidth="219.0" stylesheets="@Styles.css" text="Prisijungti" textFill="WHITE">
+            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Lentelių veiksmai" wrappingWidth="216.13671875">
                <font>
-                  <Font name="Eras Bold ITC" size="17.0" />
+                  <Font name="Eras Demi ITC" size="20.0" />
                </font>
-            </Button>
-            <Pane prefHeight="341.0" prefWidth="219.0" />
-            <Button fx:id="find" mnemonicParsing="false" onAction="#onFind" prefHeight="75.0" prefWidth="227.0" styleClass="" stylesheets="@Styles.css" text="Ieškoti" textFill="WHITE">
-               <font>
-                  <Font name="Eras Bold ITC" size="17.0" />
-               </font>
-            </Button>
+            </Text>
+            <ComboBox fx:id="tableActions" prefHeight="25.0" prefWidth="229.0" />
+            <Pane fx:id="queryPane" prefHeight="422.0" prefWidth="219.0">
+               <children>
+                  <Button fx:id="login" mnemonicParsing="false" onAction="#onLogin" prefHeight="39.0" prefWidth="219.0" stylesheets="@Styles.css" text="Prisijungti" textFill="WHITE">
+                     <font>
+                        <Font name="Eras Bold ITC" size="17.0" />
+                     </font>
+                  </Button>
+               </children></Pane>
          </VBox>
       </left>
       <top>
@@ -73,11 +72,10 @@
                </Text>
             </Pane>
             <Pane prefHeight="117.0" prefWidth="383.0">
-               <Button fx:id="closeButton" onAction="#onClose" layoutX="330.0" layoutY="14.0" mnemonicParsing="false" text="EXIT" textAlignment="CENTER"/>
-               <Text fx:id="curUser" fill="WHITE" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0"
-                     text="Vartotojas:" wrappingWidth="168.13671875">
+               <Button fx:id="closeButton" layoutX="330.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClose" text="EXIT" textAlignment="CENTER" />
+               <Text fx:id="curUser" fill="WHITE" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Vartotojas:" wrappingWidth="168.13671875">
                   <font>
-                     <Font name="Eras Medium ITC" size="14.0"/>
+                     <Font name="Eras Medium ITC" size="14.0" />
                   </font>
                </Text>
             </Pane>
@@ -85,7 +83,14 @@
       </top>
 
       <bottom>
-         <HBox prefHeight="43.0" prefWidth="1393.0" BorderPane.alignment="CENTER" />
+         <HBox prefHeight="43.0" prefWidth="1393.0" BorderPane.alignment="CENTER">
+            <children>
+               <Button fx:id="dropy" mnemonicParsing="false" onAction="#onDrop" prefHeight="39.0" prefWidth="219.0" stylesheets="@Styles.css" text="Panaikinti lentelę" textFill="WHITE">
+                  <font>
+                     <Font name="Eras Bold ITC" size="17.0" />
+                  </font>
+               </Button>
+            </children></HBox>
       </bottom>
 
 

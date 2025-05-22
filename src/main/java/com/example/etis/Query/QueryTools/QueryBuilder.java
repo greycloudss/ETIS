@@ -7,7 +7,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class QueryBuilder<Row> {
     private final String   tableName;
@@ -19,6 +23,46 @@ public class QueryBuilder<Row> {
     public String getTableName() {
         return tableName;
     }
+
+    public static <L, R> String joinQuery(Class<L> leftRecord, String leftTableName,Class<R> rightRecord, String rightTableName) {
+        RecordComponent[] lc = leftRecord.getRecordComponents();
+        RecordComponent[] rc = rightRecord.getRecordComponents();
+
+        Set<String> leftFields = Arrays.stream(lc)
+                .map(RecordComponent::getName)
+                .collect(Collectors.toSet());
+        Set<String> rightFields = Arrays.stream(rc)
+                .map(RecordComponent::getName)
+                .collect(Collectors.toSet());
+
+        Set<String> joinKeys = new LinkedHashSet<>(leftFields);
+        joinKeys.retainAll(rightFields);
+        if (joinKeys.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No common fields to join on between "
+                            + leftRecord.getSimpleName() + " and "
+                            + rightRecord.getSimpleName()
+            );
+        }
+
+        String on = joinKeys.stream()
+                .map(k -> "a." + k + " = b." + k)
+                .collect(Collectors.joining(" AND "));
+
+        String selectA = Arrays.stream(lc)
+                .map(c -> "a." + c.getName())
+                .collect(Collectors.joining(", "));
+        String selectB = Arrays.stream(rc)
+                .map(c -> "b." + c.getName() + " AS b_" + c.getName())
+                .collect(Collectors.joining(", "));
+        String selectList = selectA + ", " + selectB;
+
+        return String.format(
+                "SELECT %s FROM %s a JOIN %s b ON %s",
+                selectList, leftTableName, rightTableName, on
+        );
+    }
+
 
     public String select() {
         return "SELECT * FROM " + tableName;
@@ -32,18 +76,29 @@ public class QueryBuilder<Row> {
 
     public String update(Row row) {
         Pair<String, String> data = RecordUtil.iterateRecord(row);
-        String[] keyArr =  data.getKey().split(",");
-        String[] valArr =  data.getValue().split(",");
-        StringBuilder builder = new StringBuilder("UPDATE " + tableName + " SET ");
+        String[] cols = data.getKey().split(",");
+        String[] vals = data.getValue().split(",");
 
-        for (int i = 0; i < keyArr.length; ++i)
-            builder.append(keyArr[i]).append(" = ").append(valArr[i]).append(", ");
+        String idCol = cols[0];
+        String idVal = vals[0];
 
-        return builder.toString();
+        StringBuilder b = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
+        for (int i = 1; i < cols.length; i++) {
+            b.append(cols[i]).append(" = ").append(vals[i]);
+            if (i < cols.length - 1) b.append(", ");
+        }
+        b.append(" WHERE ").append(idCol).append(" = ").append(idVal);
+
+        return b.toString();
     }
+
 
     public String delete() {
         return "DELETE FROM " + tableName;
+    }
+
+    public String drop() {
+        return "DROP TABLE " + tableName;
     }
 
     public static <R> Function<ResultSet, R> recordMapper(Class<R> recordClass) {

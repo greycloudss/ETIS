@@ -6,6 +6,7 @@ module com.example.etis {
     requires java.desktop;
     requires java.sql;
     requires org.postgresql.jdbc;
+    requires jdk.javadoc;
 
     opens com.example.etis to javafx.fxml;
     exports com.example.etis;
