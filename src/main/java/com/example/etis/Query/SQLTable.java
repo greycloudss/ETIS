@@ -30,6 +30,17 @@ public class SQLTable<Row> extends QueryBuilder<Row> {
         return rows;
     }
 
+    public boolean deleteById(String idColumn, Object idValue) throws SQLException {
+        String sql = String.format(
+                "DELETE FROM %s WHERE %s = ?",
+                getTableName(), idColumn
+        );
+        try (var ps = handler.getConnection().prepareStatement(sql)) {
+            ps.setObject(1, idValue);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     public List<Row> selectQuery() throws SQLException {
         rows.clear();
 

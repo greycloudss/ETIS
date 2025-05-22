@@ -13,12 +13,16 @@
     -fx-border-width: 0px;
 }
 
-#find, #login, #dropy {
+#find, #login, #droppy {
     -fx-background-color: #2a2d45;
     -fx-alignment: center;
     -fx-border-radius: 0%;
     -fx-border-width: 0px;
     -fx-text-fill: white;
+}
+
+#find:disabled, #login:disabled, #droppy:disabled {
+    -fx-background-color: #191b2d;
 }
 
 #find:hover, #login:hover, #dropy:hover {

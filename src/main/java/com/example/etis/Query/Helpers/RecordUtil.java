@@ -43,6 +43,8 @@ public final class RecordUtil {
 
     public static List<Class<?>> findTableJoin(Class<?> row) {
 
+        if (!row.isRecord()) return null;
+
         Set<String> rowCols = Arrays.stream(row.getRecordComponents())
                 .map(RecordComponent::getName)
                 .collect(Collectors.toSet());

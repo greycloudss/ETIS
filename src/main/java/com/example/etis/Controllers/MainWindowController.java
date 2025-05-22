@@ -68,7 +68,8 @@ public class MainWindowController {
 
     private QueryHandler qHandler;
 
-    public Button closeButton;
+    @FXML
+    public Button closeButton, droppy;
 
     @FXML
     public Text curUser;
@@ -152,6 +153,8 @@ public class MainWindowController {
                 throw new RuntimeException(e);
             }
         });
+
+        enableRowDeletion();
 
         userTextUpdate(Privilege.root);
     }
@@ -348,11 +351,36 @@ public class MainWindowController {
         userTable.setItems(FXCollections.observableArrayList(raw));
     }
 
+    private void enableRowDeletion() {
+        droppy.setDisable(true);
 
-    @FXML
-    void onDrop() {
+        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> {
+            droppy.setDisable(newRow == null);
+        });
 
+        droppy.setOnAction(evt -> {
+            Object selected = userTable.getSelectionModel().getSelectedItem();
+            if (selected == null) return;
+
+            try {
+
+                String key = tableSelection.getValue();
+                @SuppressWarnings("unchecked")
+                SQLTable<Object> table = (SQLTable<Object>) map.get(key);
+
+                RecordComponent rc = selected.getClass().getRecordComponents()[0];
+                Object idValue = rc.getAccessor().invoke(selected);
+
+                table.deleteById(rc.getName(), idValue);
+
+
+                refreshTable(table, (Class<Object>)selected.getClass());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
     }
+
 
     @FXML
     void onLogin() throws IOException, SQLException {

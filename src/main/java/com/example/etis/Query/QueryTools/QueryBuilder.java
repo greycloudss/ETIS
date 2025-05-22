@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class QueryBuilder<Row> {
     private final String   tableName;
@@ -24,7 +23,10 @@ public class QueryBuilder<Row> {
         return tableName;
     }
 
-    public static <L, R> String joinQuery(Class<L> leftRecord, String leftTableName,Class<R> rightRecord, String rightTableName) {
+    public static <L, R> String joinQuery(
+            Class<L> leftRecord, String leftTableName,
+            Class<R> rightRecord, String rightTableName
+    ) {
         RecordComponent[] lc = leftRecord.getRecordComponents();
         RecordComponent[] rc = rightRecord.getRecordComponents();
 
@@ -46,7 +48,7 @@ public class QueryBuilder<Row> {
         }
 
         String on = joinKeys.stream()
-                .map(k -> "a." + k + " = b." + k)
+                .map(k -> "a." + k + "::text = b." + k + "::text")
                 .collect(Collectors.joining(" AND "));
 
         String selectA = Arrays.stream(lc)
