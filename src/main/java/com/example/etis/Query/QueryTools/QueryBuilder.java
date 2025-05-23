@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 
 public class QueryBuilder<Row> {
     private final String   tableName;
+    private final QueryHandler handler;
 
-    public QueryBuilder(String tableName) {
+    public QueryBuilder(String tableName, QueryHandler handler) {
         this.tableName   = tableName;
+        this.handler = handler;
     }
 
     public String getTableName() {
@@ -65,44 +67,6 @@ public class QueryBuilder<Row> {
         );
     }
 
-
-    public String select() {
-        return "SELECT * FROM " + tableName;
-    }
-
-    public String insert(Row row) {
-        Pair<String, String> data = RecordUtil.iterateRecord(row);
-
-        return "INSERT INTO " + tableName + " " + data.getKey() + " VALUES " + data.getValue();
-    }
-
-    public String update(Row row) {
-        Pair<String, String> data = RecordUtil.iterateRecord(row);
-        String[] cols = data.getKey().split(",");
-        String[] vals = data.getValue().split(",");
-
-        String idCol = cols[0];
-        String idVal = vals[0];
-
-        StringBuilder b = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
-        for (int i = 1; i < cols.length; i++) {
-            b.append(cols[i]).append(" = ").append(vals[i]);
-            if (i < cols.length - 1) b.append(", ");
-        }
-        b.append(" WHERE ").append(idCol).append(" = ").append(idVal);
-
-        return b.toString();
-    }
-
-
-    public String delete() {
-        return "DELETE FROM " + tableName;
-    }
-
-    public String drop() {
-        return "DROP TABLE " + tableName;
-    }
-
     public static <R> Function<ResultSet, R> recordMapper(Class<R> recordClass) {
         RecordComponent[] comps = recordClass.getRecordComponents();
         Class<?>[] types = Arrays.stream(comps).map(RecordComponent::getType).toArray(Class<?>[]::new);
@@ -144,6 +108,5 @@ public class QueryBuilder<Row> {
             }
         };
     }
-
 }
 

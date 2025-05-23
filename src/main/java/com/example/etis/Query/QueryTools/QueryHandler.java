@@ -6,7 +6,6 @@ import org.postgresql.PGConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class QueryHandler {
     private final String dbUrl = "jdbc:postgresql://localhost:5432/TyleGeraByla";
@@ -18,7 +17,7 @@ public class QueryHandler {
         pg.addDataType("kontakt_info", com.example.etis.Query.Helpers.Types.kontakt_info.class);
     }
 
-    public Connection getConnection() throws SQLException {
+    public Connection getConnection() {
         return conn;
     }
 
@@ -37,43 +36,39 @@ public class QueryHandler {
         return b.toString();
     }
 
-    public int executeQuery(String query) throws SQLException {
-        Statement stmt = conn.createStatement();
-        int rowsAffected = stmt.executeUpdate(query);
-        stmt.close();
-        return rowsAffected;
-    }
+    public List<List<?>> executeRawSelect(String sql, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
 
-    public <Row> List<Row> executeSelect(String query,  Function<ResultSet, Row> rowMapper) throws SQLException {
-        List<Row> results = new ArrayList<>();
-
-        try (Statement stmt = conn.createStatement(); ResultSet rs   = stmt.executeQuery(query)) {
-
-            while (rs.next())
-                results.add(rowMapper.apply(rs));
-
-        }
-        return results;
-    }
-
-    public List<List<?>> executeRawSelect(String sql) throws SQLException {
-        try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            ResultSetMetaData md = rs.getMetaData();
-            List<List<?>> rows = new ArrayList<>();
-            while (rs.next()) {
-                List<Object> row = new ArrayList<>();
-                for (int i = 1; i <= md.getColumnCount(); i++) {
-                    row.add(rs.getObject(i));
-                }
-                rows.add(row);
+            for (int i = 0; i < params.length; i++) {
+                ps.setObject(i + 1, params[i]);
             }
-            return rows;
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<List<?>> rows = new ArrayList<>();
+                int cols = rs.getMetaData().getColumnCount();
+
+                while (rs.next()) {
+                    List<Object> row = new ArrayList<>(cols);
+                    for (int c = 1; c <= cols; c++) row.add(rs.getObject(c));
+                    rows.add(row);
+                }
+                return rows;
+            }
+        } catch (SQLException ex) {
+            conn.rollback();
+        } finally {
+            conn.setAutoCommit(true);
         }
+        return null;
     }
 
-    public int executeUpdate(String sql) throws SQLException {
-        try (Statement stmt = conn.createStatement()) {
-            return stmt.executeUpdate(sql);
+    public int executeUpdate(String sql, Object... params) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                ps.setObject(i + 1, params[i]);
+            }
+            return ps.executeUpdate();
         }
     }
 }

@@ -18,13 +18,13 @@
    <BorderPane layoutX="2.0" layoutY="-5.0" prefHeight="756.0" prefWidth="1100.0">
       <left>
          <VBox alignment="TOP_CENTER" prefHeight="596.0" prefWidth="219.0" BorderPane.alignment="CENTER">
-            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Duomenų lentelės" wrappingWidth="216.13671875">
+            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Duomenys" wrappingWidth="216.13671875">
                <font>
                   <Font name="Eras Demi ITC" size="20.0" />
                </font>
             </Text>
             <ComboBox fx:id="tableSelection" prefHeight="25.0" prefWidth="229.0" />
-            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Lentelių veiksmai" wrappingWidth="216.13671875">
+            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Veiksmai" wrappingWidth="216.13671875">
                <font>
                   <Font name="Eras Demi ITC" size="20.0" />
                </font>
@@ -38,7 +38,7 @@
                      </font>
                   </Button>
                </children></Pane>
-            <Button fx:id="droppy" mnemonicParsing="false" prefHeight="39.0" prefWidth="219.0" stylesheets="@Styles.css" text="Panaikinti lentelę" textFill="WHITE">
+            <Button fx:id="droppy" mnemonicParsing="false" prefHeight="39.0" prefWidth="219.0" stylesheets="@Styles.css" text="Panaikinti duomenis" textFill="WHITE">
                <font>
                   <Font name="Eras Bold ITC" size="17.0" />
                </font>
@@ -93,7 +93,7 @@
 
       <center>
          <VBox alignment="CENTER" prefHeight="393.0" prefWidth="336.0" spacing="10.0" BorderPane.alignment="CENTER">
-            <TableView fx:id="userTable" prefHeight="600.0" prefWidth="730.0"/>
+            <TableView fx:id="userTable" prefHeight="600.0" prefWidth="730.0" />
          </VBox>
       </center>
    </BorderPane>

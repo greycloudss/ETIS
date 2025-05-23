@@ -6,14 +6,6 @@ import java.sql.Date;
 import java.time.OffsetDateTime;
 
 public record Tables() {
-    /*
-    *
-    *
-    *   Subject for change as this may require type creation instead of primitive use
-    *
-    *
-    */
-
     public record Teismai(int teismasID, String pavadinimas, teismas tipas, String vieta) { }
 
     public record BylosDetales(int bylosID, String bylosapibendr, Date bylospradziosdata) { }

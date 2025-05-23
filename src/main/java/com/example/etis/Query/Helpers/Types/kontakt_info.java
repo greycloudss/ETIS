@@ -1,6 +1,5 @@
 package com.example.etis.Query.Helpers.Types;
 
-
 import org.postgresql.util.PGobject;
 
 import java.sql.SQLException;

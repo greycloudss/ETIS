@@ -1,6 +1,7 @@
 package com.example.etis.Controllers;
 
 
+import com.example.etis.Query.Helpers.EnumHelper.LabeledEnum;
 import com.example.etis.Query.Helpers.Privilege;
 import com.example.etis.Query.Helpers.RecordUtil;
 import com.example.etis.Query.Helpers.Tables;
@@ -13,8 +14,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
@@ -26,41 +25,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Pair;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.RecordComponent;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import static jdk.javadoc.internal.tool.Main.execute;
-
-/*
-
-        ----- LOGIN -----
-
-    switch fxml on login btn
-
-    after login set mainContrl privs as something
-
-    will check the cached value
-
-    will update perms -> update allowed tables.
-
-
-        ----- QUERY -----
-
-    Query Handler will most likely handle the queries and for users above "user" perms will allow to insert things
-
-    for users above "priv" will let add more things such as new judges or...
-
-
-        -----  -----
-
-*/
-
 
 
 public class MainWindowController {
@@ -159,26 +129,6 @@ public class MainWindowController {
         userTextUpdate(Privilege.root);
     }
 
-
-    ObservableList<String> componentsToString(RecordComponent[] comps) {
-        ObservableList<String> list = FXCollections.observableArrayList();
-        if (comps != null)
-            for (RecordComponent rc : comps) list.add(rc.getName());
-        return list;
-    }
-
-    private Object convert(String raw, Class<?> t) {
-        if (raw == null || raw.isEmpty()) return null;
-        if (t == String.class) return raw;
-        if (t == int.class || t == Integer.class)    return Integer.valueOf(raw);
-        if (t == long.class|| t == Long.class)       return Long.valueOf(raw);
-        if (t == double.class|| t == Double.class)   return Double.valueOf(raw);
-        if (t == boolean.class|| t == Boolean.class) return Boolean.valueOf(raw);
-        if (t.isEnum()) return Enum.valueOf((Class<Enum>)t, raw);
-
-        throw new IllegalArgumentException("Unsupported type " + t);
-    }
-
     private void displaySet() {
         queryPane.getChildren().clear();
         String key = tableSelection.getValue();
@@ -203,7 +153,7 @@ public class MainWindowController {
         apply.getStyleClass().setAll(login.getStyleClass());
         apply.setOnAction(e -> {
             try {
-                tbl.updateColumnById(cols.getValue(), idField.getText(), newVal.getText());
+                tbl.updateColumnById(cols.getValue(), Integer.parseInt(idField.getText()), newVal.getText());
                 refreshTable(tbl, (Class<Object>)rc);
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -257,8 +207,8 @@ public class MainWindowController {
             lbl.setFont(new Font("Eras Demi ITC", 10));
             lbl.setTextFill(Color.WHITE);
             Control input = comp.getType().isEnum()
-                    ? new ComboBox<>(FXCollections.observableArrayList(
-                    Arrays.stream(comp.getType().getEnumConstants()).map(Object::toString).toList()))
+                    ? new ComboBox<>(FXCollections.observableArrayList(Arrays.stream(comp.getType()
+                            .getEnumConstants()).map(e -> ((LabeledEnum)e).getLabel()).toList()))
                     : new TextField();
             if (input instanceof ComboBox<?> cb) cb.getSelectionModel().selectFirst();
             inputs.add(input);
@@ -275,7 +225,7 @@ public class MainWindowController {
                     String raw = (c instanceof ComboBox<?> cb)
                             ? cb.getValue().toString()
                             : ((TextField)c).getText();
-                    args[i] = convert(raw, comps[i].getType());
+                    args[i] = RecordUtil.convert(raw, comps[i].getType());
                 }
 
                 Constructor<?> ctor = rcType.getDeclaredConstructor(
@@ -285,7 +235,7 @@ public class MainWindowController {
                 );
                 Object row = ctor.newInstance(args);
 
-                table.insertQuery(row);
+                table.insert(row);
 
                 refreshTable(table, (Class<Object>)rcType);
 
@@ -354,27 +304,22 @@ public class MainWindowController {
     private void enableRowDeletion() {
         droppy.setDisable(true);
 
-        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldRow, newRow) -> {
-            droppy.setDisable(newRow == null);
-        });
+        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, sel) ->
+                droppy.setDisable(sel == null));
 
-        droppy.setOnAction(evt -> {
+        droppy.setOnAction(_evt -> {
             Object selected = userTable.getSelectionModel().getSelectedItem();
             if (selected == null) return;
 
             try {
+                RecordComponent idComp = selected.getClass().getRecordComponents()[0];
+                Object rawId    = idComp.getAccessor().invoke(selected);
+                int    id       = ( (Number) rawId ).intValue();
 
-                String key = tableSelection.getValue();
                 @SuppressWarnings("unchecked")
-                SQLTable<Object> table = (SQLTable<Object>) map.get(key);
-
-                RecordComponent rc = selected.getClass().getRecordComponents()[0];
-                Object idValue = rc.getAccessor().invoke(selected);
-
-                table.deleteById(rc.getName(), idValue);
-
-
-                refreshTable(table, (Class<Object>)selected.getClass());
+                SQLTable<Object> tbl = (SQLTable<Object>) map.get(tableSelection.getValue());
+                tbl.deleteById(id);
+                refreshTable(tbl, (Class<Object>) selected.getClass());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -432,8 +377,6 @@ public class MainWindowController {
         userTable.getItems().addAll(items);
     }
 
-
-
     public void setqHandler(QueryHandler qh) throws SQLException {
         qHandler = qh;
 
@@ -444,7 +387,6 @@ public class MainWindowController {
         procesodalyvisSQLTable      = new SQLTable<>(qHandler, Tables.ProcesoDalyvis.class);
         BylosEigojeSQLTable         = new SQLTable<>(qHandler, Tables.Bylos_Eigoje.class);
         Bylu_Ilgio_MetrikaSQLTable  = new SQLTable<>(qHandler, Tables.Bylos_Ilgio_Metrika.class);
-        ateinantysPosedziaiSQLTable = new SQLTable<>(qHandler, Tables.Ateinantys_Posedziai.class);
 
         map.put("Teismai", teismaiSQLTable);
         map.put("Posedziai", bylosPosedziaiSQLTable);
@@ -453,12 +395,11 @@ public class MainWindowController {
         map.put("Bylos Dalyviai", bylosDalyviaiSQLTable);
         map.put("Proceso Dalyviai", procesodalyvisSQLTable);
         map.put("Bylos Eigoje", BylosEigojeSQLTable);
-        map.put("Ateinantys Posedziai", ateinantysPosedziaiSQLTable);
 
         tableSelection.getItems().setAll(
                 "Teismai", "Posedziai", "Bylu ilgio metrika",
                 "Byla", "Bylos Dalyviai", "Proceso Dalyviai",
-                "Bylos Eigoje",  "Ateinantys Posedziai"
+                "Bylos Eigoje"
         );
 
         tableActions.getItems().setAll("Peržiūtėti duomenis",
@@ -476,7 +417,6 @@ public class MainWindowController {
                     case "Posedziai"                    -> refreshTable(bylosPosedziaiSQLTable             ,     Tables.Bylos_Posedziai.class);
                     case "Bylos Dalyviai"               -> refreshTable(bylosDalyviaiSQLTable              ,     Tables.Bylos_Dalyviai.class);
                     case "Proceso Dalyviai"             -> refreshTable(procesodalyvisSQLTable             ,     Tables.ProcesoDalyvis.class);
-                    case "Ateinantys Posedziai"         -> refreshTable(ateinantysPosedziaiSQLTable        ,     Tables.Ateinantys_Posedziai.class);
                 }
                 switch (tableActions.getValue()) {
                     case "Pateikti naujus duomenis" -> displayInsert();
@@ -496,16 +436,8 @@ public class MainWindowController {
         regexKeyword = qHandler.buildPostgresKeywordsRegex();
     }
 
-    public void setPrivs(Privilege privs) {
-        this.privs = privs;
-    }
-
     public LoginScreenController getLogContr() {
         return logContr;
-    }
-
-    public void setLogContr(LoginScreenController logContr) {
-        this.logContr = logContr;
     }
 
     public void setCreds(Pair<String, String> creds) {
@@ -514,25 +446,8 @@ public class MainWindowController {
         login.setVisible(false);
     }
 
-    public QueryHandler getqHandler() {
-        return qHandler;
-    }
-
-    public boolean isLoggedIn() {
-        return loggedIn;
-    }
-
-    public void setLoggedIn(boolean loggedIn) {
-        this.loggedIn = loggedIn;
-    }
-
     void userTextUpdate(Privilege priv) {
         this.privs = priv;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> void insertInto(SQLTable<T> table, Object row) {
-        table.insert((T) row);
     }
 
     public void onClose() {

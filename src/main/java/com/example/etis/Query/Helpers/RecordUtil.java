@@ -1,11 +1,10 @@
 package com.example.etis.Query.Helpers;
 
+import com.example.etis.Query.Helpers.EnumHelper.EnumUtil;
+import com.example.etis.Query.Helpers.EnumHelper.LabeledEnum;
 import javafx.util.Pair;
 import java.lang.reflect.RecordComponent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class RecordUtil {
@@ -46,8 +45,7 @@ public final class RecordUtil {
         if (!row.isRecord()) return null;
 
         Set<String> rowCols = Arrays.stream(row.getRecordComponents())
-                .map(RecordComponent::getName)
-                .collect(Collectors.toSet());
+                .map(RecordComponent::getName).collect(Collectors.toSet());
 
         Class<?>[] candidates = {
                 Tables.Ateinantys_Posedziai.class,
@@ -72,5 +70,19 @@ public final class RecordUtil {
                 }
         }
         return joinables;
+    }
+
+    public static Object convert(String raw, Class<?> t) {
+        if (raw == null || raw.isEmpty()) return null;
+        raw = raw.trim().replaceAll("_", " ");
+        if (t == String.class) return raw;
+        if (t == int.class || t == Integer.class)    return Integer.valueOf(raw);
+        if (t == long.class|| t == Long.class)       return Long.valueOf(raw);
+        if (t == double.class|| t == Double.class)   return Double.valueOf(raw);
+        if (t == boolean.class|| t == Boolean.class) return Boolean.valueOf(raw);
+        if (LabeledEnum.class.isAssignableFrom(t)) return EnumUtil.fromLabel((Class) t, raw);
+        if (t.isEnum()) return Enum.valueOf((Class<Enum>)t, raw);
+
+        throw new IllegalArgumentException("Unsupported type " + t);
     }
 }

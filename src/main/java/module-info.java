@@ -7,6 +7,7 @@ module com.example.etis {
     requires java.sql;
     requires org.postgresql.jdbc;
     requires jdk.javadoc;
+    requires jdk.internal.le;
 
     opens com.example.etis to javafx.fxml;
     exports com.example.etis;
